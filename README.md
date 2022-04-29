@@ -1,5 +1,5 @@
 # Multihead Attention layer that supports attention bias and autoregression
-This is the implementation of the Multihead Attention layer from the famous ["Attention is all you need"](https://arxiv.org/abs/1706.03762), except I added a bias term in the logit before the softmax function, as I have seen this term increasingly appears in literature, for example, [AlphaFold 2](https://www.nature.com/articles/s41586-021-03819-2) and [Graphormer](https://arxiv.org/abs/2106.05234). The calculation of attention weights is as followed:
+This is the implementation of the Multihead Attention layer from the famous ["Attention is all you need"](https://arxiv.org/abs/1706.03762), except I added a bias term in the logit before the softmax function, as I have seen this term increasingly appears in literature, for example, [AlphaFold 2](https://www.nature.com/articles/s41586-021-03819-2) and [Graphormer](https://arxiv.org/abs/2106.05234). The calculation of the query hidden state is as followed:
 
 $$A = softmax(\frac{Q K^\top}{\sqrt{d}}+b)V$$
 
