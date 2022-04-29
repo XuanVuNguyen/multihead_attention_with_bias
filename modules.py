@@ -54,27 +54,27 @@ class MultiHeadAttentionWithBias(nn.Module):
         query: Tensor, 
         key_value: Optional[Tensor]=None, 
         # value: Optional[Tensor]=None,
-        past_keys_values: Optional[Tuple[Tensor]]=None,
+        keys_values_cache: Optional[Tuple[Tensor]]=None,
         attention_bias: Optional[Tensor]=None,
         attention_mask: Optional[Tensor]=None,
-        is_autoregressive: bool=False,
+        update_keys_values_cache: bool=False,
         return_attn_weights: bool=False,
         return_current_keys_values: bool=False,):
         '''
         Self-attention is performed when:
-         *Both :key_value: and :past_keys_values: are set to None.
-         *:key_value: is set to None and :is_autoregressive: is True.
+         *Both :key_value: and :keys_values_cache: are set to None.
+         *:key_value: is set to None and :update_keys_values_cache: is True.
         Args:
          :query, key_value: `(bsz, len, fea_dim)`: :key_value: will be ignored if :is_regression: is `False` and
-             :past_keys_values: is specified.
+             :keys_values_cache: is specified.
              
-         :past_keys_values: store the projected keys and values to prevent re-projecting when calling this layer
+         :keys_values_cache: store the projected keys and values to prevent re-projecting when calling this layer
              multiple times but not changing keys and values (think about the cross_attention in decoder when running inference).
-             Can be updated with the newly projected keys and values if :is_autoregressive: is True (self_attention in decoder when running inference).
+             Can be updated with the newly projected keys and values if :update_keys_values_cache: is True (self_attention in decoder when running inference).
              
          :attention_bias: `(bsz, q_len, kv_len)`
          :attention_mask: `(bsz, q_len, kv_len)`: masking out the tokens of key that we dont want to attend to. Masked tokens are labeled as 0.
-         :is_autoregressive: whether to update the :past_keys_values: with the current projected keys and values.
+         :update_keys_values_cache: whether to update the :keys_values_cache: with the current projected keys and values.
          :return_attn_weights: (bool): if True then return the attention weights of all heads along with the query state.
          :return_current_keys_values: (bool): if True then return the current projected keys and values pair.
         '''
@@ -87,21 +87,21 @@ class MultiHeadAttentionWithBias(nn.Module):
         
         q = self.W_q(query)
         
-        if past_keys_values is not None:
-            assert len(past_keys_values)==2
-            past_k = past_keys_values[0].transpose(0, 1)
-            past_v = past_keys_values[1].transpose(0, 1) # time dim first
+        if keys_values_cache is not None:
+            assert len(keys_values_cache)==2
+            past_k = keys_values_cache[0].transpose(0, 1)
+            past_v = keys_values_cache[1].transpose(0, 1) # time dim first
         else:
             past_k, past_v = (torch.zeros((0, bsz, embed_dim), dtype=q.dtype),
                          torch.zeros((0, bsz, embed_dim), dtype=q.dtype))
                 
-        if is_autoregressive:
+        if update_keys_values_cache:
             k = self.W_k(key_value)
             v = self.W_v(key_value)
             k = torch.cat([past_k, k], dim=0)
             v = torch.cat([past_v, v], dim=0)
         else:
-            if past_keys_values is None:
+            if keys_values_cache is None:
                 k = self.W_k(key_value)
                 v = self.W_v(key_value)
             else:

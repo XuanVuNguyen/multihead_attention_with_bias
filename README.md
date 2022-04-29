@@ -5,6 +5,6 @@ $$A = softmax(\frac{Q^\top K}{\sqrt{d}}+b)V$$
 
 with $Q$, $K$, and $V$ is the projection of query, key, and value, respectively, $d$ is the dimention of each attention head, and $b$ is the bias term.
 
-This layer also supports auto-regression, as in the decoder of the original Transformer. In details, this layer is designed to be able to store the projections of key and value in the argument `past_keys_values` in order to reuse these projections for subsequent time-steps when performing auto-regression.
+This layer also supports auto-regression, as in the decoder of the original Transformer. In details, this layer is designed to be able to store the projections of key and value in the argument `keys_values_cache` in order to reuse these projections for subsequent time-steps when performing auto-regression.
 
 The detail usage of this layer can be found in [demo.ipynb](demo.ipynb).
